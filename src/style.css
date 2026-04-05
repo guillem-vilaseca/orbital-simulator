@@ -1,4 +1,11 @@
-
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Evita barras de scroll indeseadas */
+  background-color: #050505; /* Un negro profundo para el espacio */
+}
 
 #app {
   width: 100vw;

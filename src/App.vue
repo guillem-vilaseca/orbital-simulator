@@ -1,35 +1,55 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { TresCanvas } from '@tresjs/core'
-import { OrbitControls } from '@tresjs/cientos'
+import SimScene from './components/SimScene.vue'
 
-// Más adelante, aquí irá la lógica matemática y de estado.
-// Por ahora, solo importamos los componentes base.
+// Estado Reactivo de nuestra UI
+const semiejeMayor = ref(5.0)
+const excentricidad = ref(0.0) // 0 es circular, > 0 es elíptica
 </script>
 
 <template>
-  <TresCanvas window-size>
-    
-    <TresPerspectiveCamera
-      :position="[0, 5, 15]" 
-      :fov="45"
-      :near="0.1"
-      :far="1000"
-    />
-    
-    <OrbitControls />
+  <main>
+    <div class="ui-panel">
+      <h2>Parámetros Orbitales</h2>
+      
+      <div class="control-group">
+        <label>Semieje Mayor (a): {{ semiejeMayor }}</label>
+        <input type="range" v-model.number="semiejeMayor" min="3.5" max="15" step="0.1" />
+      </div>
 
-    <TresAmbientLight :intensity="0.5" />
-    <TresDirectionalLight :position="[10, 10, 10]" :intensity="2" />
+      <div class="control-group">
+        <label>Excentricidad (e): {{ excentricidad }}</label>
+        <input type="range" v-model.number="excentricidad" min="0" max="0.8" step="0.01" />
+      </div>
+    </div>
 
-    <TresMesh>
-      <TresSphereGeometry :args="[3, 32, 32]" />
-      <TresMeshStandardMaterial color="#2b59c3" wireframe />
-    </TresMesh>
-
-    <TresMesh :position="[5, 0, 0]"> 
-      <TresSphereGeometry :args="[0.2, 16, 16]" />
-      <TresMeshBasicMaterial color="#ff3333" />
-    </TresMesh>
-
-  </TresCanvas>
+    <TresCanvas window-size>
+      <Suspense>
+        <SimScene :a="semiejeMayor" :e="excentricidad" />
+      </Suspense>
+    </TresCanvas>
+  </main>
 </template>
+
+<style>
+/* CSS para que el panel flote de forma elegante estilo "Dashboard Espacial" */
+.ui-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(15, 15, 20, 0.85);
+  backdrop-filter: blur(4px);
+  color: #e0e0e0;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  z-index: 10; /* Crítico: Asegura que el HTML esté encima del Canvas 3D */
+  font-family: system-ui, sans-serif;
+  width: 250px;
+}
+.ui-panel h2 { margin-top: 0; font-size: 1.2rem; color: #fff; }
+.control-group { margin-top: 15px; display: flex; flex-direction: column; }
+.control-group label { margin-bottom: 8px; font-size: 0.9em; font-weight: bold; }
+input[type="range"] { cursor: pointer; accent-color: #2b59c3; }
+</style>
