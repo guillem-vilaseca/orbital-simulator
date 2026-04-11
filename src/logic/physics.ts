@@ -76,3 +76,32 @@ export function calculateOrbitPath(semiMajorAxis: number, eccentricity: number, 
     }
     return points;
 }
+
+/**
+ * Calcula el estado de un satélite en un punto específico de su órbita
+ * usando la "Anomalía Verdadera" (el ángulo theta desde el periastro).
+ */
+export function getStateAtAnomaly(a: number, e: number, theta: number): { pos: Vector3, vel: Vector3 } {
+  // Semi-latus rectum (p)
+  const p = a * (1 - e * e); 
+  
+  // Distancia al centro en este ángulo específico (Ecuación polar de la elipse)
+  const r = p / (1 + e * Math.cos(theta)); 
+
+  // Vector de Posición en el plano XZ
+  const pos = new Vector3(
+    r * Math.cos(theta),
+    0,
+    r * Math.sin(theta)
+  );
+
+  // Vector de Velocidad
+  const h = Math.sqrt(MU * p); // Momento angular específico
+  const vel = new Vector3(
+    -(MU / h) * Math.sin(theta),
+    0,
+    (MU / h) * (e + Math.cos(theta))
+  );
+
+  return { pos, vel };
+}

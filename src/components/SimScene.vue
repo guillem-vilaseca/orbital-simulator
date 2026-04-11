@@ -3,7 +3,7 @@ import { shallowRef, watch } from 'vue'
 import { useLoop } from '@tresjs/core'
 import { OrbitControls, useTextures, Stars } from '@tresjs/cientos'
 import { Vector3, Mesh, Line, BufferGeometry, Float32BufferAttribute, Object3D } from 'three'
-import { updateRK4, getInitialState, calculateOrbitPath } from '../logic/physics'
+import { updateRK4, calculateOrbitPath, getStateAtAnomaly } from '../logic/physics'
 
 const textures = useTextures(['/textures/earth_color.jpg', '/textures/earth_normal.jpg', '/textures/earth_specular.jpg', '/textures/earth_clouds.jpg'])
 
@@ -45,29 +45,28 @@ function resetOrbit() {
   constelationPositions.length = 0
   constelationVelocities.length = 0
 
-  for (let i = 0; i < SAT_COUNT; i++) {
-    // Les damos una pequeña variación matemática a cada satélite basándonos en tu UI
-    const randomA = props.a + (Math.random() - 0.5) * 1.5 // Variación en tamaño
-    const randomE = Math.max(0, Math.min(0.8, props.e + (Math.random() - 0.5) * 0.1)) // Variación en excentricidad
+for (let i = 0; i < SAT_COUNT; i++) {
+    // 1. Posición base a lo largo de los 360 grados
+    const theta = (i / SAT_COUNT) * Math.PI * 2;
+    const state = getStateAtAnomaly(props.a, props.e, theta);
+
+    // --- 2. EL TRUCO DEL CILINDRO (Dispersión 3D) ---
+    // Creamos ángulos de desviación muy pequeños. 
+    // Modifica este '0.1' para hacer el tubo más gordo o más estrecho.
+    const grosor = 0.3;
+    const tiltX = (Math.random() - 0.5) * grosor; 
+    const tiltY = (Math.random() - 0.5) * grosor;
     
-    const initialState = getInitialState(randomA, randomE)
-    const pos = initialState.position
-    const vel = initialState.velocity
+    // Aplicamos esta leve inclinación TANTO a la posición como a la velocidad.
+    state.pos.applyAxisAngle(new Vector3(1, 0, 0), tiltX);
+    state.vel.applyAxisAngle(new Vector3(1, 0, 0), tiltX);
+    
+    state.pos.applyAxisAngle(new Vector3(0, 1, 0), tiltY);
+    state.vel.applyAxisAngle(new Vector3(0, 1, 0), tiltY);
 
-    // MAGIA ESPACIAL: Dispersamos las órbitas usando álgebra lineal (rotaciones)
-    // Para que no salgan todos en fila india, los rotamos en el eje Y (Longitud del Nodo)
-    const angleY = Math.random() * Math.PI * 2
-    pos.applyAxisAngle(new Vector3(0, 1, 0), angleY)
-    vel.applyAxisAngle(new Vector3(0, 1, 0), angleY)
-
-    // Los inclinamos ligeramente en el eje X para que formen una red global
-    const angleX = (Math.random() - 0.5) * Math.PI * 0.5
-    pos.applyAxisAngle(new Vector3(1, 0, 0), angleX)
-    vel.applyAxisAngle(new Vector3(1, 0, 0), angleX)
-
-    // Guardamos su estado inicial
-    constelationPositions.push(pos)
-    constelationVelocities.push(vel)
+    // 3. Guardamos su estado inicial con el offset aplicado
+    constelationPositions.push(state.pos);
+    constelationVelocities.push(state.vel);
   }
 }
 
@@ -153,5 +152,4 @@ onBeforeRender(({ delta }) => {
       :emissiveIntensity="3" 
     />
   </TresInstancedMesh>
-
 </template>

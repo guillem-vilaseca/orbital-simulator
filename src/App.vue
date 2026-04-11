@@ -1,11 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import SimScene from './components/SimScene.vue'
 
 // Estado Reactivo de nuestra UI
 const semiejeMayor = ref(5.0)
 const excentricidad = ref(0.0) // 0 es circular, > 0 es elíptica
+
+const RADIO_TIERRA_SEGURO = 3.1 // Radio 3 de la Tierra + 0.1 de margen de atmósfera
+
+// Calculamos el máximo permitido usando la fórmula despejada: e_max = 1 - (R / a)
+const maxExcentricidad = computed(() => {
+  const maxCalc = 1 - (RADIO_TIERRA_SEGURO / semiejeMayor.value)
+  // Limitamos entre 0 y 0.95 (para evitar órbitas hiperbólicas/abiertas que rompen la elipse)
+  return Math.max(0, Math.min(0.95, maxCalc))
+})
+
+// Si el usuario reduce el semieje mayor, la excentricidad actual podría volverse ilegal.
+// Este watch la empuja hacia abajo automáticamente si nos pasamos del límite.
+watch(maxExcentricidad, (nuevoMax) => {
+  if (excentricidad.value > nuevoMax) {
+    // Redondeamos a 2 decimales para que el slider no se vuelva loco
+    excentricidad.value = Math.floor(nuevoMax * 100) / 100 
+  }
+})
 </script>
 
 <template>
@@ -20,7 +38,13 @@ const excentricidad = ref(0.0) // 0 es circular, > 0 es elíptica
 
       <div class="control-group">
         <label>Excentricidad (e): {{ excentricidad }}</label>
-        <input type="range" v-model.number="excentricidad" min="0" max="0.8" step="0.01" />
+        <input 
+                type="range" 
+                v-model.number="excentricidad" 
+                min="0" 
+                :max="maxExcentricidad" 
+                step="0.01" 
+              />      
       </div>
     </div>
 
