@@ -2,8 +2,6 @@
 import { shallowRef, watch } from 'vue'
 import { useLoop } from '@tresjs/core'
 import { OrbitControls, useTextures, Stars } from '@tresjs/cientos'
-// --- NUEVO: Importaciones de Post-Procesado y Object3D ---
-import { EffectComposer, BloomPmndrs  } from '@tresjs/post-processing'
 import { Vector3, Mesh, Line, BufferGeometry, Float32BufferAttribute, Object3D } from 'three'
 import { updateRK4, getInitialState, calculateOrbitPath } from '../logic/physics'
 
