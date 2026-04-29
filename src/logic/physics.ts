@@ -1,6 +1,5 @@
 import { Vector3 } from "three";
 
-// Constant gravitacional simplificada per a la simulació
 export const MU = 10;
 
 /**
@@ -18,7 +17,6 @@ function getAcceleration(position: Vector3): Vector3 {
 
 /**
  * Actualitza la posició i velocitat d'un satèl·lit usant el mètode de Runge-Kutta de 4t ordre.
- * Aquest mètode proporciona una integració numèrica més precisa que Euler.
  * @param position - Vector de posició (s'actualitza in-place)
  * @param velocity - Vector de velocitat (s'actualitza in-place)
  * @param dt - Pas de temps de la simulació
