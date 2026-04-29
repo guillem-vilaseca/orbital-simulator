@@ -18,7 +18,17 @@ El projecte està construït seguint una arquitectura modular en Vue 3 i TypeScr
 
 ## Fonaments Matemàtics
 
-Segueix aquest enllaç per veure les matemàtiques del projecte: [Fonaments de mecànica orbital](src\logic\orbital_mechanics.md)
+### El Model Físic
+La simulació resol el problema d'una força central (camp gravitatori terrestre). L'acceleració d'un satèl·lit en la posició $\mathbf{r}$ ve donada per:
+
+$$\vec{F} = -G \frac{M m}{r^2} \hat{u}_r$$
+
+On $G$ és la constant de gravitació universal i $M$ és la massa de la Terra.
+
+### Integració Numèrica (RK4)
+Per predir la posició i velocitat en el següent instant de temps ($t + \Delta t$), el codi utilitza el mètode Runge-Kutta de 4t ordre. Aquest avalua la derivada en quatre punts diferents de l'interval per obtenir una aproximació de l'ordre $(\Delta t)^4$.
+
+**[Llegeix el document sencer de Mecànica Orbital per veure el desenvolupament matemàtic complet](src/logic/orbital_mechanics.md)**.
 
 
 ## Consideracions Tècniques i Rendiment
