@@ -12,17 +12,20 @@ const props = defineProps<{ a: number, e: number }>()
 const orbitLineRef = shallowRef<Line | null>(null) 
 const cloudsRef = shallowRef<Mesh | null>(null)
 
-// --- NUEVO: Estado de la Constelación (150 Satélites) ---
 const SAT_COUNT = 150
 const instancedMeshRef = shallowRef<any>(null)
 const constelationPositions: Vector3[] = []
 const constelationVelocities: Vector3[] = []
-const dummy = new Object3D() // Objeto matemático temporal para mover las instancias
+const dummy = new Object3D()
 
+/**
+ * Recalcula l'òrbita visual i la constel·lació de satèl·lits basant-se en els paràmetres actuals.
+ * Actualitza la geometria de la línia orbital i reinicia les posicions i velocitats de la constel·lació.
+ */
 function resetOrbit() {
   if (!orbitLineRef.value) return
 
-  // 1. DIBUJAR LA LÍNEA TEÓRICA CENTRAL (la que controlas con los sliders)
+  // Generar els punts que formen l'elipse orbital
   const points = calculateOrbitPath(props.a, props.e)
   const float32Array = new Float32Array(points.length * 3)
   
@@ -40,31 +43,29 @@ function resetOrbit() {
   newGeometry.setAttribute('position', new Float32BufferAttribute(float32Array, 3))
   orbitLineRef.value.geometry = newGeometry
 
-  // --- NUEVO: 2. RECALCULAR LA CONSTELACIÓN ---
-  // Vaciamos los arrays
+  // Buidar i reinicialitzar les posicions i velocitats dels satèl·lits
   constelationPositions.length = 0
   constelationVelocities.length = 0
 
 for (let i = 0; i < SAT_COUNT; i++) {
-    // 1. Posición base a lo largo de los 360 grados
+    // Distribuir satèl·lits uniformement al voltant de l'òrbita
     const theta = (i / SAT_COUNT) * Math.PI * 2;
     const state = getStateAtAnomaly(props.a, props.e, theta);
 
-    // --- 2. EL TRUCO DEL CILINDRO (Dispersión 3D) ---
-    // Creamos ángulos de desviación muy pequeños. 
-    // Modifica este '0.1' para hacer el tubo más gordo o más estrecho.
+    // Crear una dispersió 3D (forma de cilindre) afegint petites inclinacions aleatòries
+    // Ajusta el valor de 'grosor' per modificar l'amplada de la dispersió
     const grosor = 0.3;
     const tiltX = (Math.random() - 0.5) * grosor; 
     const tiltY = (Math.random() - 0.5) * grosor;
     
-    // Aplicamos esta leve inclinación TANTO a la posición como a la velocidad.
+    // Aplicar les inclinacions tant a la posició com a la velocitat per mantenir la física coherent
     state.pos.applyAxisAngle(new Vector3(1, 0, 0), tiltX);
     state.vel.applyAxisAngle(new Vector3(1, 0, 0), tiltX);
     
     state.pos.applyAxisAngle(new Vector3(0, 1, 0), tiltY);
     state.vel.applyAxisAngle(new Vector3(0, 1, 0), tiltY);
 
-    // 3. Guardamos su estado inicial con el offset aplicado
+    // Guardar l'estat inicial de cada satèl·lit
     constelationPositions.push(state.pos);
     constelationVelocities.push(state.vel);
   }
@@ -79,38 +80,37 @@ watch(
 const { onBeforeRender } = useLoop()
 
 onBeforeRender(({ delta }) => {
-  // Rotación de las nubes
-  if(cloudsRef.value) {
+  // Rotar les núvols de la Terra de forma contínua
+  if (cloudsRef.value) {
     cloudsRef.value.rotation.y += delta * 0.015;
   }
 
-  // --- NUEVO: FÍSICA MULTI-CUERPO PARA LA CONSTELACIÓN ---
+  // Actualitzar la simulació física de la constel·lació de satèl·lits
   if (instancedMeshRef.value && constelationPositions.length === SAT_COUNT) {
-    const dt = Math.min(delta, 0.1) 
+    const dt = Math.min(delta, 0.1);
     
-   for (let i = 0; i < SAT_COUNT; i++) {
-      // 1. Física RK4
-      updateRK4(constelationPositions[i], constelationVelocities[i], dt * 2)
+    for (let i = 0; i < SAT_COUNT; i++) {
+      // Integrar la física orbital usant RK4 per a precisió
+      updateRK4(constelationPositions[i], constelationVelocities[i], dt * 2);
       
-      const pos = constelationPositions[i]
-      const vel = constelationVelocities[i]
+      const pos = constelationPositions[i];
+      const vel = constelationVelocities[i];
 
-      // 2. Posición
-      dummy.position.copy(pos)
+      // Posicionar el satèl·lit a les seves coordenades actuals
+      dummy.position.copy(pos);
 
-      // 3. MATEMÁTICA DE ORIENTACIÓN (Nuevo)
-      // Calculamos hacia dónde se dirige (Posición + Velocidad)
-      const futurePosition = pos.clone().add(vel)
-      dummy.lookAt(futurePosition) // El frente de la geometría mirará hacia este punto
+      // Orientar la geometria del satèl·lit cap a la seva direcció de moviment
+      const futurePosition = pos.clone().add(vel);
+      dummy.lookAt(futurePosition);
       
-      // 4. Actualizamos la matriz
-      dummy.updateMatrix()
-      instancedMeshRef.value.setMatrixAt(i, dummy.matrix)
+      // Actualitzar la matriu de transformació del satèl·lit
+      dummy.updateMatrix();
+      instancedMeshRef.value.setMatrixAt(i, dummy.matrix);
     }
-    // 4. Le avisamos a la GPU que ha habido un cambio global
-    instancedMeshRef.value.instanceMatrix.needsUpdate = true
+    // Notificar a la GPU que les matrius d'instància s'han modificat
+    instancedMeshRef.value.instanceMatrix.needsUpdate = true;
   }
-})
+});
 </script>
 
 <template>

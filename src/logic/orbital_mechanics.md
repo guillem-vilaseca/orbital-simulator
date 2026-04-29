@@ -8,7 +8,6 @@ Aquest document detalla els principis físics i matemàtics que regeixen el movi
 
 La simulació es basa en el **Problema dels Dos Cossos** mecànica clàssica, que assumeix que un cos de massa petita (el satèl·lit, $m$) orbita al voltant d'un cos de massa masiva (la Terra, $M$), y que ambdos son esfèricament simètrics.
 
-Partimos de la **Ley de Gravitación Universal de Newton**:
 Partim de la **Lley de Gravitació Universal de Newton**:
 
 $$\vec{F} = -G \frac{M m}{r^2} \hat{u}_r$$
@@ -18,7 +17,7 @@ On:
 * $r$ és la distància entre els centres de massa.
 * $\hat{u}_r$ és el vector unitari que apunta de la Terra al satèl·lit.
 
-Aplicant la Segona Lley de Newton ($\vec{F} = m \vec{a}$), podem cancel·lar la massa del satèlit ($m$) i defini el **paràmetre gravitacional estàndard** ($\mu= G \cdot M$). Això ens dona l'equació diferencial fonamental del moviment orbital:
+Aplicant la Segona Lley de Newton ($\vec{F} = m \vec{a}$), podem cancel·lar la massa del satèlit ($m$) i definir el **paràmetre gravitacional estàndard** ($\mu= G \cdot M$). Això ens dona l'equació diferencial fonamental del moviment orbital:
 
 $$\ddot{\vec{r}} = -\frac{\mu}{r^3}\vec{r}$$
 

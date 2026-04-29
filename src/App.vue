@@ -3,25 +3,23 @@ import { computed, ref, watch } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import SimScene from './components/SimScene.vue'
 
-// Estado Reactivo de nuestra UI
-const semiejeMayor = ref(5.0)
-const excentricidad = ref(0.0) // 0 es circular, > 0 es elíptica
+const majorSemiaxis = ref(5.0)
+const excentricity = ref(0.0) // 0 és circular , > 0 és el·líptica, < 0 és hiperbòlica (no vàlida per a la nostra simulació)
 
-const RADIO_TIERRA_SEGURO = 3.1 // Radio 3 de la Tierra + 0.1 de margen de atmósfera
+const SAFE_EARTH_RATIUS = 3.1 // Volem evitar que l'òrbita intersequi amb la Terra, així que establim un radi mínim segur.
 
-// Calculamos el máximo permitido usando la fórmula despejada: e_max = 1 - (R / a)
-const maxExcentricidad = computed(() => {
-  const maxCalc = 1 - (RADIO_TIERRA_SEGURO / semiejeMayor.value)
-  // Limitamos entre 0 y 0.95 (para evitar órbitas hiperbólicas/abiertas que rompen la elipse)
+// Calculem la excentricitat màxima: e_max = 1 - (R / a)
+const maxExcentricity = computed(() => {
+  const maxCalc = 1 - (SAFE_EARTH_RATIUS / majorSemiaxis.value)
+  // Limitem entre 0 i 0.95 (per evitar òrbites hiperbòliques/apertes que trenquin l'el·lipse)
   return Math.max(0, Math.min(0.95, maxCalc))
 })
 
-// Si el usuario reduce el semieje mayor, la excentricidad actual podría volverse ilegal.
-// Este watch la empuja hacia abajo automáticamente si nos pasamos del límite.
-watch(maxExcentricidad, (nuevoMax) => {
-  if (excentricidad.value > nuevoMax) {
-    // Redondeamos a 2 decimales para que el slider no se vuelva loco
-    excentricidad.value = Math.floor(nuevoMax * 100) / 100 
+// Si l'usuari redueix el semieix major, l'excentricitat actual podria convertir-se en il·legal.
+// Aquest watch la redueix automàticament si superem el límit.
+watch(maxExcentricity, (newMax) => {
+  if (excentricity.value > newMax) {
+    excentricity.value = Math.floor(newMax * 100) / 100 
   }
 })
 </script>
@@ -29,20 +27,20 @@ watch(maxExcentricidad, (nuevoMax) => {
 <template>
   <main>
     <div class="ui-panel">
-      <h2>Parámetros Orbitales</h2>
-      
+      <h2>Paràmetres orbitals</h2>
+
       <div class="control-group">
-        <label>Semieje Mayor (a): {{ semiejeMayor }}</label>
-        <input type="range" v-model.number="semiejeMayor" min="3.5" max="15" step="0.1" />
+        <label>Semieix major (a): {{ majorSemiaxis }}</label>
+        <input type="range" v-model.number="majorSemiaxis" min="3.5" max="15" step="0.1" />
       </div>
 
       <div class="control-group">
-        <label>Excentricidad (e): {{ excentricidad }}</label>
+        <label>Excentricitat (e): {{ excentricity }}</label>
         <input 
                 type="range" 
-                v-model.number="excentricidad" 
+                v-model.number="excentricity" 
                 min="0" 
-                :max="maxExcentricidad" 
+                :max="maxExcentricity" 
                 step="0.01" 
               />      
       </div>
@@ -50,14 +48,13 @@ watch(maxExcentricidad, (nuevoMax) => {
 
     <TresCanvas window-size>
       <Suspense>
-        <SimScene :a="semiejeMayor" :e="excentricidad" />
+        <SimScene :a="majorSemiaxis" :e="excentricity" />
       </Suspense>
     </TresCanvas>
   </main>
 </template>
 
 <style>
-/* CSS para que el panel flote de forma elegante estilo "Dashboard Espacial" */
 .ui-panel {
   position: absolute;
   top: 20px;
@@ -68,7 +65,7 @@ watch(maxExcentricidad, (nuevoMax) => {
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #444;
-  z-index: 10; /* Crítico: Asegura que el HTML esté encima del Canvas 3D */
+  z-index: 10;
   font-family: system-ui, sans-serif;
   width: 250px;
 }
