@@ -5,7 +5,14 @@ import { OrbitControls, useTextures, Stars } from '@tresjs/cientos'
 import { Vector3, Mesh, Line, BufferGeometry, Float32BufferAttribute, Object3D } from 'three'
 import { updateRK4, calculateOrbitPath, getStateAtAnomaly } from '../logic/physics'
 
-const textures = useTextures(['/textures/earth_color.jpg', '/textures/earth_normal.jpg', '/textures/earth_specular.jpg', '/textures/earth_clouds.jpg'])
+const texturesPaths = [
+  `${import.meta.env.BASE_URL}textures/earth_color.jpg`,
+  `${import.meta.env.BASE_URL}textures/earth_normal.jpg`,
+  `${import.meta.env.BASE_URL}textures/earth_specular.jpg`,
+  `${import.meta.env.BASE_URL}textures/earth_clouds.jpg`
+]
+
+const textures = useTextures(texturesPaths)
 
 const props = defineProps<{ a: number, e: number }>()
 
