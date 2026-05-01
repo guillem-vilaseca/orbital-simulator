@@ -51,9 +51,7 @@ Per animar el satèl·lit de la pantalla, necessitem preveure la seva posició e
 
 Per garantitzar l'estabilitat orbital a llarg termini, el simulador utilitza l'integrador numèric **RK4**. Aquest mètode evalua les derivades en quatre punts diferents dins de l'interval $\Delta t$ per calcular un pendent mitjà:
 
-* $k_1$: Pendent a l'inici de l'interval. al inicio del intervalo.
-* $k_2$: Pendent en el punt mitj (utilitzant $k_1$).
-* $k_3$: Pendent en el punt mitj (utilitzant $k_2$).
+* $k_1$: Pendent a l'inici de l'interval.
+* $k_2$: Pendent en el punt mig (utilitzant $k_1$).
+* $k_3$: Pendent en el punt mig (utilitzant $k_2$).
 * $k_4$: Pendent al final de l'interval (utilitzant $k_3$).
-
-El resultat és un sistema físicament estable on l'òrbita es manté tancada, respectant la conservació de l'energia i el moment angular de les Lleis de Kepler
